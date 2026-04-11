@@ -1,0 +1,30 @@
+# STM32 CubeIDE / TrueSTUDIO / Makefile project .gitignore
+
+# Build directories
+Debug/
+Release/
+bin/
+obj/
+
+# Local configuration / Settings
+.settings/
+.project
+.cproject
+*.launch
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Unit tests / GTest
+test/build/
+
+# IDE generated files
+.mxproject
+# AUTO_TEST_V4_H7VIT6.ioc  # Keep this as it is the configuration source
+
+# OS generated files
+.DS_Store
+Thumbs.db
