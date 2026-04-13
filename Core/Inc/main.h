@@ -213,6 +213,10 @@ void Error_Handler(void);
 #define Button3_GPIO_Port GPIOC
 #define DIR4_UART4_Pin GPIO_PIN_15
 #define DIR4_UART4_GPIO_Port GPIOA
+#define STEP2_EN_Pin GPIO_PIN_0
+#define STEP2_EN_GPIO_Port GPIOC
+#define STEP2_DIR_Pin GPIO_PIN_2
+#define STEP2_DIR_GPIO_Port GPIOA
 #define CT_ACC_Pin GPIO_PIN_0
 #define CT_ACC_GPIO_Port GPIOE
 #define CT_Break_Pin GPIO_PIN_1

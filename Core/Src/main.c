@@ -550,6 +550,7 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM4_Init();
   MX_UART5_Init();
+  MX_TIM15_Init();
   /* USER CODE BEGIN 2 */
 
 #if !MAIN_MOTOR_TEST_MODE && !MAIN_BRAKE_SEQUENCE_TEST_MODE
@@ -604,13 +605,15 @@ int main(void)
 #elif MAIN_BRAKE_SEQUENCE_TEST_MODE
       Brake_SequenceUpdate();
       EN_ENABLE(&Motor1);
+      EN_ENABLE(&Motor2);
 #else
       Modbus_Service();
       APP_Run();
       Modbus_CheckHealth();
       
-      // Keep motor enabled
+      // Keep motors enabled
       EN_ENABLE(&Motor1);
+      EN_ENABLE(&Motor2);
 #endif
 
       HAL_Delay(1); 
@@ -724,6 +727,9 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 #endif
     if (htim->Instance == Motor1.Tim->Instance) {
         SCurve_TimerISR(&Motor1);
+    }
+    else if (htim->Instance == Motor2.Tim->Instance) {
+        SCurve_TimerISR(&Motor2);
     }
 }
 
