@@ -6,6 +6,7 @@
 extern uint8_t debug_pos;
 
 extern StepObject Motor1;
+extern StepObject Motor2;
 
 // Shared sequences
 extern TestStep_t std_sequence[];

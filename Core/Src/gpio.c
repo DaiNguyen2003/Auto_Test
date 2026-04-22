@@ -58,7 +58,10 @@ void MX_GPIO_Init(void)
                           |Relay_4_Pin|Relay_3_Pin|Relay_2_Pin|Relay_1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, STEP1_DIR_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, STEP1_DIR_Pin|STEP2_EN_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, STEP2_DIR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, Buzz_Pin|DIR3_UART3_Pin, GPIO_PIN_RESET);
@@ -86,11 +89,18 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pin : STEP1_DIR_Pin */
-  GPIO_InitStruct.Pin = STEP1_DIR_Pin;
+  GPIO_InitStruct.Pin = STEP1_DIR_Pin|STEP2_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : STEP2_DIR_Pin */
+  GPIO_InitStruct.Pin = STEP2_DIR_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PC5 Button3_Pin */
   GPIO_InitStruct.Pin = GPIO_PIN_5|Button3_Pin;

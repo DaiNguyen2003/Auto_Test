@@ -20,6 +20,18 @@ StepObject Motor1 = {
     .Flag_One_Time = 1,
 };
 
+StepObject Motor2 = {
+    .Tim = &htim15,
+    .Channel = TIM_CHANNEL_2,
+    .GPIO_PORT_STEP = GPIOA,
+    .GPIO_PIN_STEP = GPIO_PIN_3,
+    .GPIO_PORT_DIR = STEP2_DIR_GPIO_Port,
+    .GPIO_PIN_DIR = STEP2_DIR_Pin,
+    .GPIO_PORT_EN = STEP2_EN_GPIO_Port,
+    .GPIO_PIN_EN = STEP2_EN_Pin,
+    .Flag_One_Time = 1,
+};
+
 void Car_KeyControl(Car_Define_Typedef* car, Key_CMD_Typedef CmdAction){
     Key_Drive(CmdAction);
 }
@@ -140,11 +152,13 @@ void Car_Hardware_Init(Car_Define_Typedef* car) {
     Gear_Layout_Typedef gear_layout = (car->TypeCar == VF_Limo) ? GEAR_LAYOUT_RND_P : GEAR_LAYOUT_PR_ND;
 
     EN_ENABLE(&Motor1);
+    EN_ENABLE(&Motor2);
 
     Brake_SetHardware(&Motor1, car->BreakCmd.BreakPoss, car->BreakCmd.BreakAcc, car->BreakCmd.BreakVel, car->BreakCmd.BreakJerk);
-    Accel_SetHardware(&Motor1, car->AccelCmd.AccelPoss, car->AccelCmd.AccelAcc, car->AccelCmd.AccelVel, car->AccelCmd.AccelJerk);
+    Accel_SetHardware(&Motor2, car->AccelCmd.AccelPoss, car->AccelCmd.AccelAcc, car->AccelCmd.AccelVel, car->AccelCmd.AccelJerk);
 
     Motor1.Current_Phase = PHASE_DONE;
+    Motor2.Current_Phase = PHASE_DONE;
 
     uint8_t s_p, s_r, s_n, s_d;
     if (gear_layout == GEAR_LAYOUT_RND_P) {

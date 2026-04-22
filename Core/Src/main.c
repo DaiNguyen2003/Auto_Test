@@ -560,6 +560,7 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM4_Init();
   MX_UART5_Init();
+  MX_TIM15_Init();
   /* USER CODE BEGIN 2 */
 
   // Keep CAN/FDCAN sniffing alive in every runtime mode, including motor tests.
@@ -615,7 +616,28 @@ int main(void)
       Drain_CanRxQueue();
       Brake_SequenceUpdate();
       EN_ENABLE(&Motor1);
+      EN_ENABLE(&Motor2);
 #else
+      Modbus_Service();
+      APP_Run();
+      Modbus_CheckHealth();
+      
+      // Keep motors enabled
+      EN_ENABLE(&Motor1);
+      EN_ENABLE(&Motor2);
+#endif
+
+      HAL_Delay(1); 
+      /* USER CODE END 3 */
+  }
+}
+
+/**
+  * @brief System Clock Configuration
+  * @retval None
+  */
+void SystemClock_Config(void)
+{
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_CRSInitTypeDef RCC_CRSInitStruct = {0};
@@ -716,6 +738,9 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 #endif
     if (htim->Instance == Motor1.Tim->Instance) {
         SCurve_TimerISR(&Motor1);
+    }
+    else if (htim->Instance == Motor2.Tim->Instance) {
+        SCurve_TimerISR(&Motor2);
     }
 }
 
