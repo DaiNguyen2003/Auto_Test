@@ -4,6 +4,9 @@
 */
 
 #include "Car.h"
+#include "Car_Signals.h"
+
+#include <string.h>
 
 StepObject Motor1 = {
     .Tim = &htim2,
@@ -167,7 +170,7 @@ void Car_Hardware_Init(Car_Define_Typedef* car) {
 static Car_Define_Typedef* active_car = NULL;
 
 void Car_SetActiveConfig(Car_Type type) {
-    switch(type) {
+    switch((int)type) {
         case VF_89:     active_car = &Vinfast_VF89;     break;
         case VF_5:      active_car = &Vinfast_VF5;      break;
         case VF_67:     active_car = &Vinfast_VF67;     break;
@@ -177,8 +180,16 @@ void Car_SetActiveConfig(Car_Type type) {
         case VF_Van:    active_car = &Vinfast_Van;      break;
         case VF_Limo:   active_car = &Vinfast_Limo;     break;
         case VF_Virtual:active_car = &Vinfast_Virtual;  break;
+        case VF_7NP:    active_car = &Vinfast_7NP;      break;
         default:        active_car = &Vinfast_VF89;     break;
     }
+
+    if (active_car != NULL) {
+        memset(&active_car->StsCar, 0, sizeof(active_car->StsCar));
+    }
+
+    Car_ResetDiagState();
+    Car_RebuildSignalMonitor();
 }
 
 Car_Define_Typedef* Car_GetActiveConfig(void) {

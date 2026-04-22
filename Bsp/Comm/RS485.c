@@ -89,9 +89,9 @@ void RS485_SendResponse(uint8_t cmd, const uint8_t *data, uint8_t len) {
 }
 
 void RS485_TestSend(void) {
-    // char *msg3 = "Test UART3 (RS485-1): OK\r\n";
-    // char *msg4 = "Test UART4 (RS485-2): OK\r\n";
-    // RS485_UART3_Send((uint8_t*)msg3, strlen(msg3));
-    // RS485_UART4_Send((uint8_t*)msg4, strlen(msg4));
+    char *msg3 = "Test UART3 (RS485-1): OK\r\n";
+    char *msg4 = "Test UART4 (RS485-2): OK\r\n";
+    RS485_UART3_Send((uint8_t*)msg3, strlen(msg3));
+    RS485_UART4_Send((uint8_t*)msg4, strlen(msg4));
     system_debug.rs485_tx_count++; // Increment debug counter
 }

@@ -45,6 +45,7 @@ extern volatile uint32_t CAN_LastRxTick;
 void CANBus_Start_Config(void);
 uint8_t CANBus_PopRxFrame(CAN_Port_t port, CAN_RxFrame_t *out_frame);
 uint8_t CANBus_PopAnyRxFrame(CAN_RxFrame_t *out_frame);
+uint8_t CANBus_HasPendingRx(void);
 uint8_t CANBus_SendFrame(CAN_Port_t port, const CAN_TxFrame_t *frame);
 uint8_t CANBus_DlcCodeToBytes(uint32_t dlc_code);
 uint32_t CANBus_BytesToDlcCode(uint8_t len_bytes);

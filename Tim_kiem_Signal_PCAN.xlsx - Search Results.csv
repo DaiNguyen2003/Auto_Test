@@ -1,0 +1,18 @@
+No.,Message Name,Message ID (Hex),Message ID (Dec),DLC,Transmitter / ECU,Cycle Time / Period,Signal Name,Start Bit,Length (Bit),Byte Order / Endian,Signed / Unsigned,Factor,Offset,Min,Max,Unit,Initial Value / Default Value,Invalid Value / Error Value,Description / Comment
+1,CVC_Sts1,0xaa,170,8,CVC_P,10,CVC_BMS_HVOnOff_REQ,19,2,big,Unsigned,1,0,0,1,,0,,BMS decides whether to close or disconnect the primary and negative relays by judging this command
+2,CVC_FMCU_Ctrl,0xab,171,8,CVC_P,10,CVC_FMCU_TargetTqReq,23,16,big,Unsigned,"0,1",-400,-400,400,Nm,4000,,Front Motor Target torque Request
+3,FMCU_Status,0xc9,201,8,FMCU,10,FMCU_MotorTqValid,55,1,big,Unsigned,1,0,0,1,,0,,Front Motor torque Invalid
+4,CVC_HV_DrvSys_status,0xd9,217,8,CVC_P,40,CVC_ACTGearValid,35,1,big,Unsigned,1,0,0,1,,0,,Indicate the current gear position
+5,CVC_HV_DrvSys_status,0xd9,217,8,CVC_P,40,CVC_Recu_BrakeLight_ON_Req,45,2,big,Unsigned,1,0,0,3,-,0,,CVC request brake light ON when regen
+6,BCM_VOLTAGE,0x10a,266,8,CVC_P,100,LV_Batt_Temp,39,8,big,Unsigned,1,-40,-40,105,Degree C,40,,Low voltage Battery Temperature
+7,BCM_VOLTAGE,0x10a,266,8,CVC_P,100,LV_Batt_Current,55,16,big,Unsigned,"0,03125",-1536,-1536,"511,90625",A,49152,,Current of Low Voltage Battery
+8,BCM_VOLTAGE,0x10a,266,8,CVC_P,100,LV_BatteryType,13,2,big,Unsigned,1,0,0,3,Number,0,,LV Battery Type (Lead Acid or Lithium)
+9,BCM_VOLTAGE,0x10a,266,8,CVC_P,100,LV_SOC,47,8,big,Unsigned,1,0,0,100,%,0,,State Of charge for Low Voltage Battery
+10,CVC_Status,0x166,358,8,CVC_P,20,CVC_StsBrakePedalSwitch,29,2,big,Unsigned,1,0,0,3,,0,,Brake pedal Switch status
+11,FMCU_Info1,0x170,368,8,FMCU,10,FMCU_MaxSpeedAllow,23,16,big,Unsigned,1,-17000,-17000,17000,rpm,34000,,Front motor max speed allowed
+12,BMS_Sts,0x215,533,8,BMS,50,BMS_HV_Sts,63,8,big,Unsigned,1,0,0,255,,0,,HV Status
+13,BMS_ChgParamReq,0x216,534,8,BMS,50,BMS_RemainChargeTime,21,14,big,Unsigned,1,0,0,16383,min,0,,Remain Charge Time send to other ECU (XGW - IPC)
+14,CVC_PDU_Ctrl,0x234,564,8,CVC_P,100,CVC_DCDC_StsModeReq,14,2,big,Unsigned,1,0,0,3,,0,,CVC to DCDC control command
+15,EVCC01,0x251,593,12,EVCC,100,EVCC_ACChgL1TerminalTemp,55,8,big,Unsigned,1,-40,-40,210,Degree C,40,,Temperature of AC Charging L terminal
+16,PDU_DCDC_Status,0x296,662,8,PDU,100,PDU_DCDC_OutputCurrent,43,12,big,Unsigned,"0,1",0,0,250,A,0,,Output Current
+17,PDU_DCDC_Status,0x296,662,8,PDU,100,PDU_DCDC_OutputVolt,63,8,big,Unsigned,"0,1",0,0,25,V,0,,Output Voltage

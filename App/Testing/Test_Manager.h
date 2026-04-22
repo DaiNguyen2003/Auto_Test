@@ -43,5 +43,6 @@ extern TestCase_t TestCase_Generic;
 
 // Specialized/Legacy tests (if any)
 extern TestCase_t TestCase_GearDemo;
+extern TestCase_t TestCase_Creep;
 
 #endif // TEST_MANAGER_H

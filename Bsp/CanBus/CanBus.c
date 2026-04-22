@@ -175,6 +175,9 @@ void CANBus_Start_Config(void)
     system_debug.can2_last_rx_len = 0U;
     system_debug.can2_last_rx_id = 0U;
     system_debug.can2_last_rx_tick = 0U;
+    system_debug.can_app_last_loop_frames = 0U;
+    system_debug.can_app_budget_hit_count = 0U;
+    system_debug.can_app_pending_after_budget = 0U;
 
     CANBus_ConfigPort(&hfdcan1);
     CANBus_ConfigPort(&hfdcan2);
@@ -214,6 +217,19 @@ uint8_t CANBus_PopAnyRxFrame(CAN_RxFrame_t *out_frame)
             s_next_pop_port = (uint8_t)((CANBus_PortToIndex(port) + 1U) % 2U);
             return 1U;
         }
+    }
+
+    return 0U;
+}
+
+uint8_t CANBus_HasPendingRx(void)
+{
+    if (s_rx_queues[0].head != s_rx_queues[0].tail) {
+        return 1U;
+    }
+
+    if (s_rx_queues[1].head != s_rx_queues[1].tail) {
+        return 1U;
     }
 
     return 0U;

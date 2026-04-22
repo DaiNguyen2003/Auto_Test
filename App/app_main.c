@@ -11,6 +11,7 @@
 #include "Debug_UART.h"
 #include "Car_Signals.h"
 #include "CanBus.h"
+#include "app_config.h"
 
 void APP_Init(void) {
     // 1. Initialize BSP / Hardware Control
@@ -32,13 +33,27 @@ void APP_Init(void) {
     
     // 4. Initialize Scheduler
     Scheduler_Init();
+    system_debug.can_app_last_loop_frames = 0U;
+    system_debug.can_app_budget_hit_count = 0U;
+    system_debug.can_app_pending_after_budget = 0U;
 }
 
 void APP_Run(void) {
     CAN_RxFrame_t frame;
+    uint32_t processed_frames = 0U;
 
-    while (CANBus_PopAnyRxFrame(&frame) != 0U) {
-        (void)Car_ParseFrame(&frame);
+    while ((processed_frames < CAN_APP_RX_BUDGET_PER_LOOP) &&
+           (CANBus_PopAnyRxFrame(&frame) != 0U)) {
+        (void)Car_ProcessRxFrame(&frame);
+        processed_frames++;
+    }
+
+    system_debug.can_app_last_loop_frames = processed_frames;
+    system_debug.can_app_pending_after_budget = CANBus_HasPendingRx();
+
+    if ((processed_frames == CAN_APP_RX_BUDGET_PER_LOOP) &&
+        (system_debug.can_app_pending_after_budget != 0U)) {
+        system_debug.can_app_budget_hit_count++;
     }
 
     Scheduler_Update();

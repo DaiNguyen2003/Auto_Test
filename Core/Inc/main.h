@@ -129,6 +129,16 @@ typedef struct {
     uint8_t can2_last_rx_len;
     uint32_t can2_last_rx_id;
     uint32_t can2_last_rx_tick;
+    uint32_t can2_diag_match_count;
+    uint32_t can2_diag_unmatched_count;
+    uint32_t can2_diag_parse_error_count;
+    uint32_t can2_diag_active_count;
+    uint16_t can2_diag_last_signal;
+    uint64_t can2_diag_last_raw_value;
+    uint32_t can2_diag_last_update_tick;
+    uint32_t can_app_last_loop_frames;
+    uint32_t can_app_budget_hit_count;
+    uint8_t can_app_pending_after_budget;
     uint32_t brake_trigger_accept_count;
     uint32_t brake_trigger_ignore_count;
 } System_Debug_Typedef;

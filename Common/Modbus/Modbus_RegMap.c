@@ -11,6 +11,7 @@
 #include "bsp.h"
 #include "Hardware_Control.h"
 #include "Car.h"
+#include "Car_Signals.h"
 #include "Test_Manager.h"
 #include "common.h"
 #include "IO_Control.h"
@@ -24,6 +25,126 @@ Modbus_Registers_t modbus_regs;
 #define cmd_regs modbus_regs.Array
 static uint8_t s_brake_cmd_host_latch = FC_Break_Step_IDLE;
 static uint8_t s_brake_trigger_rearm_lock = 0U;
+
+static uint8_t ModbusRegMap_IsSignalHeaderAddr(uint16_t addr)
+{
+    return (addr >= REG_SIGMON_HEADER_BASE) && (addr <= REG_SIGMON_MAX_ROWS_REG);
+}
+
+static uint8_t ModbusRegMap_IsSignalDataAddr(uint16_t addr)
+{
+    return (addr >= REG_SIGMON_DATA_BASE) &&
+           (addr < (REG_SIGMON_DATA_BASE + (CAR_SIGNAL_MONITOR_MAX_ROWS * SIGMON_DATA_ROW_STRIDE_REGS)));
+}
+
+static uint8_t ModbusRegMap_IsSignalNameAddr(uint16_t addr)
+{
+    return (addr >= REG_SIGMON_NAME_BASE) &&
+           (addr < (REG_SIGMON_NAME_BASE + (CAR_SIGNAL_MONITOR_MAX_ROWS * SIGMON_NAME_ROW_STRIDE_REGS)));
+}
+
+static uint16_t ModbusRegMap_ReadSignalHeader(const Car_SignalMonitorTable_t *table, uint16_t addr)
+{
+    switch (addr) {
+        case REG_SIGMON_SCHEMA_VERSION:
+            return SIGMON_SCHEMA_VERSION_VALUE;
+
+        case REG_SIGMON_ACTIVE_CAR_TYPE:
+            return (table != NULL) ? (uint16_t)table->active_car_type : 0U;
+
+        case REG_SIGMON_SIGNAL_COUNT:
+            return (table != NULL) ? table->signal_count : 0U;
+
+        case REG_SIGMON_NAME_CHARS:
+            return CAR_SIGNAL_MONITOR_NAME_CHARS;
+
+        case REG_SIGMON_VALUE_SCALE:
+            return (uint16_t)CAR_SIGNAL_MONITOR_VALUE_SCALE;
+
+        case REG_SIGMON_GENERATION:
+            return (table != NULL) ? table->generation : 0U;
+
+        case REG_SIGMON_DATA_ROW_STRIDE:
+            return SIGMON_DATA_ROW_STRIDE_REGS;
+
+        case REG_SIGMON_NAME_ROW_STRIDE:
+            return SIGMON_NAME_ROW_STRIDE_REGS;
+
+        case REG_SIGMON_MAX_ROWS_REG:
+            return CAR_SIGNAL_MONITOR_MAX_ROWS;
+
+        default:
+            return 0U;
+    }
+}
+
+static uint16_t ModbusRegMap_ReadSignalData(const Car_SignalMonitorTable_t *table, uint16_t addr)
+{
+    uint16_t offset = addr - REG_SIGMON_DATA_BASE;
+    uint16_t row_index = offset / SIGMON_DATA_ROW_STRIDE_REGS;
+    uint16_t field_index = offset % SIGMON_DATA_ROW_STRIDE_REGS;
+    uint16_t flags = 0U;
+    uint32_t value_raw = 0U;
+    static const Car_SignalMonitorRow_t kEmptyRow = {0};
+    const Car_SignalMonitorRow_t *row = &kEmptyRow;
+
+    if ((table != NULL) && (row_index < table->signal_count)) {
+        row = &table->rows[row_index];
+    }
+
+    flags |= (row->defined != 0U) ? 0x0001U : 0U;
+    flags |= (row->seen != 0U) ? 0x0002U : 0U;
+    flags |= (row->value_valid != 0U) ? 0x0004U : 0U;
+    value_raw = (uint32_t)row->value_milli;
+
+    switch (field_index) {
+        case 0U:
+            return row_index;
+
+        case 1U:
+            return (uint16_t)row->signal_name;
+
+        case 2U:
+            return flags;
+
+        case 3U:
+            return (uint16_t)(value_raw & 0xFFFFU);
+
+        case 4U:
+            return (uint16_t)((value_raw >> 16U) & 0xFFFFU);
+
+        default:
+            return 0U;
+    }
+}
+
+static uint16_t ModbusRegMap_ReadSignalName(const Car_SignalMonitorTable_t *table, uint16_t addr)
+{
+    uint16_t offset = addr - REG_SIGMON_NAME_BASE;
+    uint16_t row_index = offset / SIGMON_NAME_ROW_STRIDE_REGS;
+    uint16_t reg_index = offset % SIGMON_NAME_ROW_STRIDE_REGS;
+    uint16_t char_index = (uint16_t)(reg_index * 2U);
+    const char *token = "";
+    uint8_t char0 = 0U;
+    uint8_t char1 = 0U;
+
+    if ((table != NULL) && (row_index < table->signal_count)) {
+        token = Car_GetSignalNameToken(table->rows[row_index].signal_name);
+    }
+
+    if ((token != NULL) && (char_index < CAR_SIGNAL_MONITOR_NAME_CHARS) && (token[char_index] != '\0')) {
+        char0 = (uint8_t)token[char_index];
+    }
+
+    if ((token != NULL) &&
+        ((char_index + 1U) < CAR_SIGNAL_MONITOR_NAME_CHARS) &&
+        (token[char_index] != '\0') &&
+        (token[char_index + 1U] != '\0')) {
+        char1 = (uint8_t)token[char_index + 1U];
+    }
+
+    return (uint16_t)char0 | ((uint16_t)char1 << 8U);
+}
 
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -284,13 +405,30 @@ bool ModbusRegMap_Write(uint16_t addr, uint16_t value) {
 bool ModbusRegMap_IsReadAddr(uint16_t addr) {
     return (addr < REG_WRITE_MAX ||
             (addr >= REG_STS_BASE && addr < (REG_STS_BASE + REG_STS_COUNT)) ||
+            ModbusRegMap_IsSignalHeaderAddr(addr) ||
+            ModbusRegMap_IsSignalDataAddr(addr) ||
+            ModbusRegMap_IsSignalNameAddr(addr) ||
             (addr == REG_STS_FW_VERSION));
 }
 
 uint16_t ModbusRegMap_Read(uint16_t addr) {
+    const Car_SignalMonitorTable_t *signal_monitor = Car_GetSignalMonitor();
+
     /* If reading from Command range, return value from local array */
     if (addr < REG_WRITE_MAX) {
         return modbus_regs.Array[addr];
+    }
+
+    if (ModbusRegMap_IsSignalHeaderAddr(addr) != 0U) {
+        return ModbusRegMap_ReadSignalHeader(signal_monitor, addr);
+    }
+
+    if (ModbusRegMap_IsSignalDataAddr(addr) != 0U) {
+        return ModbusRegMap_ReadSignalData(signal_monitor, addr);
+    }
+
+    if (ModbusRegMap_IsSignalNameAddr(addr) != 0U) {
+        return ModbusRegMap_ReadSignalName(signal_monitor, addr);
     }
 
     Car_Define_Typedef* car = Car_GetActiveConfig();

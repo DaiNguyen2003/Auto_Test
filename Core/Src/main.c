@@ -39,13 +39,11 @@
 #include "RS485.h"
 #include "Modbus_RTU.h"
 #include "Debug_UART.h"
+#include "app_config.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-#define MAIN_MOTOR_TEST_MODE       0U
-#define MAIN_BRAKE_SEQUENCE_TEST_MODE 0U
-
 #if MAIN_MOTOR_TEST_MODE
 typedef enum {
     MOTOR_TEST_STATE_RUN_FORWARD = 0,
@@ -76,8 +74,8 @@ char lcd_buffer[100];
 /* USER CODE BEGIN PD */
 #define MOTOR_TEST_MOTOR_OBJ       Motor1
 #define MOTOR_TEST_PWM_RUN_HZ      600U
-#define MOTOR_TEST_RUN_TIME_MS     10000U
-#define MOTOR_TEST_PAUSE_TIME_MS   3000U
+#define MOTOR_TEST_RUN_TIME_MS     3000U
+#define MOTOR_TEST_PAUSE_TIME_MS   5000U
 #define MOTOR_TEST_DIR_SETTLE_MS   100U
 #define BRAKE_CALIB_DEFAULT_TARGET_STEPS 17778U
 #define BRAKE_CALIB_MAX_TARGET_STEPS 40000U
@@ -117,6 +115,18 @@ static void MPU_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#if MAIN_MOTOR_TEST_MODE || MAIN_BRAKE_SEQUENCE_TEST_MODE
+static void Drain_CanRxQueue(void)
+{
+  CAN_RxFrame_t frame;
+
+  while (CANBus_PopAnyRxFrame(&frame) != 0U) {
+    // In standalone test modes we only need to drain raw frames
+    // so the ISR queue does not overflow.
+  }
+}
+#endif
+
  #if MAIN_BRAKE_SEQUENCE_TEST_MODE
 static uint32_t Brake_CalibClampTargetSteps(uint32_t target_steps)
 {
@@ -552,9 +562,8 @@ int main(void)
   MX_UART5_Init();
   /* USER CODE BEGIN 2 */
 
-#if !MAIN_MOTOR_TEST_MODE && !MAIN_BRAKE_SEQUENCE_TEST_MODE
+  // Keep CAN/FDCAN sniffing alive in every runtime mode, including motor tests.
   CANBus_Start_Config();
-#endif
 
   HAL_GPIO_WritePin(Buzz_GPIO_Port, Buzz_Pin, 0);
   HAL_GPIO_WritePin(Relay_1_GPIO_Port,  Relay_1_Pin, 0);
@@ -600,30 +609,13 @@ int main(void)
       /* USER CODE BEGIN 3 */
       now = HAL_GetTick();
 #if MAIN_MOTOR_TEST_MODE
+      Drain_CanRxQueue();
       Motor_TestUpdate();
 #elif MAIN_BRAKE_SEQUENCE_TEST_MODE
+      Drain_CanRxQueue();
       Brake_SequenceUpdate();
       EN_ENABLE(&Motor1);
 #else
-      Modbus_Service();
-      APP_Run();
-      Modbus_CheckHealth();
-      
-      // Keep motor enabled
-      EN_ENABLE(&Motor1);
-#endif
-
-      HAL_Delay(1); 
-      /* USER CODE END 3 */
-  }
-}
-
-/**
-  * @brief System Clock Configuration
-  * @retval None
-  */
-void SystemClock_Config(void)
-{
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_CRSInitTypeDef RCC_CRSInitStruct = {0};

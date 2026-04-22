@@ -99,7 +99,7 @@ void UI_Manager_Update(void) {
         // Button 1: Prev Page (Left)
         if (btn1 && !last_btn1) {
             if (current_page <= PAGE_MINIVAN_TEST) {
-                current_page = PAGE_GEARDEMO_TEST; // Wrap backward to latest test page
+                current_page = PAGE_CREEP_TEST; // Wrap backward to latest test page
             } else {
                 current_page--;
             }
@@ -182,7 +182,7 @@ void UI_Manager_Display(void) {
     Frame_Clear();
 
     // Row 0: Header with page and run status
-    const char* titles[] = {"", "miniVan", "Limo", "VF89", "VF5", "VF67", "VF3", "VF2", "e34", "Virtual", "GearDemo"};
+    const char* titles[] = {"", "miniVan", "Limo", "VF89", "VF5", "VF67", "VF3", "VF2", "e34", "Virtual", "GearDemo", "Creep"};
     if(current_page < PAGE_MAX) {
         snprintf(buffer, sizeof(buffer), "P%d %-8s %4s", current_page, titles[current_page], UI_GetStatusText());
         Frame_Print(0, 0, buffer);

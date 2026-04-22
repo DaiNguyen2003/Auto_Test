@@ -40,7 +40,7 @@ Car_Define_Typedef Vinfast_e34 = {
 	.Defined_CAN_Msg = {
 	    /* ================= BRAKE ================= */
 	    {
-	        .name = Brake_Msg, .id = 0x1A9, .dlc = 8, .sig_num = 1,
+	        .name = Brake_Msg, .id = 0x1A9, .port = CAN_MSG_PORT_1, .dlc = 8, .sig_num = 1,
 	        .Signal = {
 	            { .name = SIG_BRAKE_SWITCH_STS, .factor = 1.0f, .offset = 0.0f, .start_bit = 63, .length = 2, .is_signed = 0, .endian = CAN_MOTOROLA }
 	        }
@@ -48,7 +48,7 @@ Car_Define_Typedef Vinfast_e34 = {
 
 	    /* ================= KEY ================= */
 	    {
-	        .name = Key_Msg, .id = 0x11B, .dlc = 8, .sig_num = 1,
+	        .name = Key_Msg, .id = 0x11B, .port = CAN_MSG_PORT_1, .dlc = 8, .sig_num = 1,
 	        .Signal = {
 	            { .name = SIG_KEY_VALID, .factor = 1.0f, .offset = 0.0f, .start_bit = 15, .length = 2, .is_signed = 0, .endian = CAN_MOTOROLA }
 	        }
@@ -56,7 +56,7 @@ Car_Define_Typedef Vinfast_e34 = {
 
 	    /* ================= GEAR ================= */
 	    {
-	        .name = Gear_Msg, .id = 0x379, .dlc = 8, .sig_num = 1,
+	        .name = Gear_Msg, .id = 0x379, .port = CAN_MSG_PORT_1, .dlc = 8, .sig_num = 1,
 	        .Signal = {
 	            { .name = SIG_GEAR_ACTUAL, .factor = 1.0f, .offset = 0.0f, .start_bit = 26, .length = 3, .is_signed = 0, .endian = CAN_MOTOROLA }
 	        }
@@ -64,7 +64,7 @@ Car_Define_Typedef Vinfast_e34 = {
 
 	    /* ================= TERMINAL ================= */
 	    {
-	        .name = STAT_Terminal_Msg, .id = 0x112, .dlc = 8, .sig_num = 1,
+	        .name = STAT_Terminal_Msg, .id = 0x112, .port = CAN_MSG_PORT_1, .dlc = 8, .sig_num = 1,
 	        .Signal = {
 	            { .name = SIG_STAT_TERMINAL, .factor = 1.0f, .offset = 0.0f, .start_bit = 34, .length = 3, .is_signed = 0, .endian = CAN_MOTOROLA }
 	        }
@@ -72,13 +72,13 @@ Car_Define_Typedef Vinfast_e34 = {
 
 	    /* ================= LV ================= */
 	    {
-	        .name = LV_Msg, .id = 0x104, .dlc = 8, .sig_num = 1,
+	        .name = LV_Msg, .id = 0x104, .port = CAN_MSG_PORT_1, .dlc = 8, .sig_num = 1,
 	        .Signal = {
 	            { .name = SIG_LV_CHARGE_REQ, .factor = 1.0f, .offset = 0.0f, .start_bit = 39, .length = 1, .is_signed = 0, .endian = CAN_MOTOROLA }
 	        }
 	    },
 	    {
-	        .name = LV_Msg, .id = 0x216, .dlc = 8, .sig_num = 2,
+	        .name = LV_Msg, .id = 0x216, .port = CAN_MSG_PORT_1, .dlc = 8, .sig_num = 2,
 	        .Signal = {
 	            { .name = SIG_LV_TARGET_CURRENT, .factor = 0.1f, .offset = 0.0f, .start_bit = 55, .length = 16, .is_signed = 0, .endian = CAN_MOTOROLA },
 	            { .name = SIG_LV_TARGET_VOLTAGE, .factor = 0.1f, .offset = 0.0f, .start_bit = 37, .length = 14, .is_signed = 0, .endian = CAN_MOTOROLA }
@@ -87,13 +87,13 @@ Car_Define_Typedef Vinfast_e34 = {
 
 	    /* ================= DCDC ================= */
 	    {
-	        .name = DCDC_Msg, .id = 0x2D5, .dlc = 8, .sig_num = 1,
+	        .name = DCDC_Msg, .id = 0x2D5, .port = CAN_MSG_PORT_1, .dlc = 8, .sig_num = 1,
 	        .Signal = {
 	            { .name = SIG_DCDC_REQUEST, .factor = 1.0f, .offset = 0.0f, .start_bit = 55, .length = 1, .is_signed = 0, .endian = CAN_MOTOROLA }
 	        }
 	    },
 	    {
-	        .name = DCDC_Msg, .id = 0x20B, .dlc = 8, .sig_num = 2,
+	        .name = DCDC_Msg, .id = 0x20B, .port = CAN_MSG_PORT_1, .dlc = 8, .sig_num = 2,
 	        .Signal = {
 	            { .name = SIG_DCDC_CURRENT, .factor = 1.0f, .offset = 0.0f, .start_bit = 31, .length = 8, .is_signed = 0, .endian = CAN_MOTOROLA },
 	            { .name = SIG_DCDC_VOLTAGE, .factor = 1.0f, .offset = 0.0f, .start_bit = 45, .length = 10, .is_signed = 0, .endian = CAN_MOTOROLA }

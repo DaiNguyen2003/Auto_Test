@@ -2,6 +2,7 @@
 #define CAR_TYPES_H
 
 #include "main.h"
+#include "CanBus.h"
 #include "tim.h"
 #include "Motor_Control.h"
 #include "Hardware_Control.h"
@@ -160,12 +161,14 @@ typedef enum {
     SIG_BRAKE_REGEN_MODE,
     SIG_BRAKE_PEDAL_VAL,
     SIG_BRAKE_LIGHT,
+    SIG_BRAKE_LIGHT_REQ,
 
     SIG_KEY_VALID,
     SIG_KEY_FOB_LEFT_CAR,
 
     SIG_GEAR_TARGET,
     SIG_GEAR_ACTUAL,
+    SIG_GEAR_VALID,
 
     SIG_STAT_TERMINAL,
 
@@ -181,11 +184,18 @@ typedef enum {
     SIG_LV_SOC,
 
     SIG_HV_ONOFF_STS,
+    SIG_HV_ONOFF_REQ,
     SIG_HV_STS,
 
     SIG_DCDC_REQUEST,
     SIG_DCDC_CURRENT,
     SIG_DCDC_VOLTAGE,
+
+    SIG_FMCU_TARGET_TQ_REQ,
+    SIG_FMCU_MOTOR_TQ_VALID,
+    SIG_FMCU_MAX_SPEED_ALLOW,
+    SIG_BMS_REMAIN_CHARGE_TIME,
+    SIG_EVCC_AC_CHG_L1_TERMINAL_TEMP,
 
     SIG_NUM
 } CAN_SignalName_t;
@@ -198,6 +208,8 @@ typedef enum{
     LV_Msg,
 	HV_Msg,
 	DCDC_Msg,
+    Motor_Msg,
+    Charge_Msg,
 } CAN_MessageName_t;
 
 typedef enum {
@@ -215,6 +227,12 @@ typedef enum {
     CAN_FRAME_POLICY_CLASSIC_ONLY,
     CAN_FRAME_POLICY_FD_ONLY
 } CAN_FramePolicy_t;
+
+typedef enum {
+    CAN_MSG_PORT_1 = CAN_PORT_1,
+    CAN_MSG_PORT_2 = CAN_PORT_2,
+    CAN_MSG_PORT_ANY = 2
+} CAN_MessagePort_t;
 
 /*
 * Struct
@@ -239,6 +257,7 @@ typedef struct {
     uint32_t     id;             // CAN ID Msg
     CAN_IdType_t id_type;        // Standard / Extended ID
     CAN_FramePolicy_t frame_policy; // Accept classic only / FD only / any
+    CAN_MessagePort_t port;      // Expected receive port
 
     CAN_Signal_t Signal[CAN_MAX_SIG_PER_MSG];
 
@@ -248,23 +267,194 @@ typedef struct {
     CAN_MessageName_t name; 
 } CAN_Message_t;
 
+typedef enum {
+    SIG_DIAG_NONE = 0,
+    SIG_DIAG_TRAFFIC_SIGN_RECOGNITION_AUDIBLE_WARNING,
+    SIG_DIAG_MOTOR_CONTROLLER_MCU_FAILURE,
+    SIG_DIAG_POWER_CLAMP_INCOMPATIBILITY_WARNING,
+    SIG_DIAG_FRONT_LEFT_BODY_MODULE_RESPONSE_FAILURE,
+    SIG_DIAG_ELECTRONIC_BRAKE_SYSTEM_FAILURE,
+    SIG_DIAG_SUNSHADE_FAILURE,
+    SIG_DIAG_TRAILER_SYSTEM_FAILURE,
+    SIG_DIAG_LOW_VOLTAGE_SYSTEM_FAILURE,
+    SIG_DIAG_LOW_VOLTAGE_CELL_BALANCE_FAILURE,
+    SIG_DIAG_EMERGENCY_LANE_KEEPING_WARNING,
+    SIG_DIAG_LANE_DEPARTURE_WARNING,
+    SIG_DIAG_HANDS_OFF_WARNING,
+    SIG_DIAG_LANE_KEEPING_ASSIST_WARNING,
+    SIG_DIAG_ESC_HSA_FAILURE,
+    SIG_DIAG_STEERING_ANGLE_SENSOR_FAILURE,
+    SIG_DIAG_NAVIGATION_FAILURE,
+    SIG_DIAG_SURROUND_CAMERA_SYSTEM_FAILURE,
+    SIG_DIAG_MID_RANGE_RADAR_FAILURE,
+    SIG_DIAG_SUNROOF_UNDERVOLTAGE_FAULT,
+    SIG_DIAG_SUNROOF_OVERVOLTAGE_FAULT,
+    SIG_DIAG_SUNROOF_MOTOR_REVERSE_FAULT,
+    SIG_DIAG_SUNROOF_HALL_SENSOR_FAULT,
+    SIG_DIAG_SUNROOF_RELAY_FAULT,
+    SIG_DIAG_SUNROOF_COMMUNICATION_FAULT,
+    SIG_DIAG_SUNROOF_THERMAL_PROTECTION_FAULT,
+    SIG_DIAG_SUNROOF_RESPONSE_FAILURE,
+    SIG_DIAG_SUNSHADE_MOTOR_REVERSE_FAULT,
+    SIG_DIAG_SUNSHADE_UNDERVOLTAGE_FAULT,
+    SIG_DIAG_SUNSHADE_OVERVOLTAGE_FAULT,
+    SIG_DIAG_SUNSHADE_RELAY_FAULT,
+    SIG_DIAG_SUNSHADE_HALL_SENSOR_FAULT,
+    SIG_DIAG_SUNSHADE_COMMUNICATION_FAULT,
+    SIG_DIAG_SUNSHADE_RESPONSE_FAILURE,
+    SIG_DIAG_KEYLESS_ENTRY_RESPONSE_FAILURE,
+    SIG_DIAG_KEYLESS_ENTRY_HARDWARE_FAILURE,
+    SIG_DIAG_KEYLESS_ENTRY_ANTENNA_FAILURE,
+    SIG_DIAG_ABS_FAILURE,
+    SIG_DIAG_EBD_FAILURE,
+    SIG_DIAG_AUTONOMOUS_EMERGENCY_BRAKING_WARNING,
+    SIG_DIAG_FORWARD_COLLISION_WARNING,
+    SIG_DIAG_ELECTRONIC_PARKING_BRAKE_FAILURE,
+    SIG_DIAG_BRAKE_CONTROLLER_ROM_FAILURE,
+    SIG_DIAG_TRACTION_STABILITY_MANAGEMENT_FAILURE,
+    SIG_DIAG_BRAKE_CONTROLLER_DIAGNOSTIC_STORAGE_FAILURE,
+    SIG_DIAG_FRONT_LEFT_DOOR_MODULE_RESPONSE_FAILURE,
+    SIG_DIAG_FRONT_LEFT_DOOR_OUTER_HANDLE_FAILURE,
+    SIG_DIAG_FRONT_LEFT_DOOR_LATCH_FAILURE,
+    SIG_DIAG_FRONT_RIGHT_DOOR_MODULE_RESPONSE_FAILURE,
+    SIG_DIAG_FRONT_RIGHT_DOOR_OUTER_HANDLE_FAILURE,
+    SIG_DIAG_FRONT_RIGHT_DOOR_LATCH_FAILURE,
+    SIG_DIAG_BRAKE_CONTROLLER_FAILURE,
+    SIG_DIAG_INTEGRATED_BRAKE_SYSTEM_FAILURE,
+    SIG_DIAG_FRONT_LEFT_WINDOW_WARNING,
+    SIG_DIAG_FRONT_RIGHT_WINDOW_WARNING,
+    SIG_DIAG_REAR_WINDOW_WARNING,
+    SIG_DIAG_SEAT_MASSAGE_PUMP_A_FAILURE,
+    SIG_DIAG_SEAT_MASSAGE_PUMP_B_FAILURE,
+    SIG_DIAG_SEAT_MASSAGE_PUMP_C_FAILURE,
+    SIG_DIAG_SEAT_MASSAGE_PUMP_D_FAILURE,
+    SIG_DIAG_REAR_AUTONOMOUS_EMERGENCY_BRAKING_WARNING,
+    SIG_DIAG_LANE_ASSIST_AUDIBLE_WARNING,
+    SIG_DIAG_BLIND_SPOT_DETECTION_AUDIBLE_WARNING,
+    SIG_DIAG_REGENERATIVE_BRAKE_MONITOR_FAILURE,
+    SIG_DIAG_INFOTAINMENT_THEFT_WARNING,
+    SIG_DIAG_CONNECTED_APP_THEFT_WARNING,
+    SIG_DIAG_VEHICLE_CHARGING_COMPATIBILITY_ERROR,
+    SIG_DIAG_MULTI_FUNCTION_SWITCH_LEFT_FAILURE,
+    SIG_DIAG_MULTI_FUNCTION_SWITCH_LIN_COMMUNICATION_FAILURE,
+    SIG_DIAG_MULTI_FUNCTION_SWITCH_RIGHT_FAILURE,
+    SIG_DIAG_GATEWAY_FOTA_ERROR,
+    SIG_DIAG_HEAD_UNIT_FOTA_ERROR,
+    SIG_DIAG_WIRELESS_CHARGER_IC_FAILURE,
+    SIG_DIAG_WIRELESS_CHARGER_FAN_FAILURE,
+    SIG_DIAG_WIRELESS_CHARGER_TEMPERATURE_SENSOR_FAILURE,
+    SIG_DIAG_WIRELESS_CHARGER_VEHICLE_SPEED_ERROR,
+    SIG_DIAG_WIRELESS_CHARGER_RESPONSE_FAILURE,
+    SIG_DIAG_WIRELESS_CHARGER_FOREIGN_OBJECT_DETECTION_ERROR,
+    SIG_DIAG_WIRELESS_CHARGER_CURRENT_ERROR,
+    SIG_DIAG_WIRELESS_CHARGER_TEMPERATURE_ERROR,
+    SIG_DIAG_SURROUND_VIEW_FRONT_CAMERA_FAILURE,
+    SIG_DIAG_SURROUND_VIEW_LEFT_CAMERA_FAILURE,
+    SIG_DIAG_SURROUND_VIEW_REAR_CAMERA_FAILURE,
+    SIG_DIAG_SURROUND_VIEW_RIGHT_CAMERA_FAILURE,
+    SIG_DIAG_DRIVER_MONITORING_WARNING,
+    SIG_DIAG_AUTO_HEADLAMP_LEVELING_FAILURE,
+    SIG_DIAG_BMS_POWER_DERATE_WARNING,
+    SIG_DIAG_BMS_CELL_SOC_IMBALANCE_WARNING,
+    SIG_DIAG_BMS_HVIL_WARNING,
+    SIG_DIAG_BMS_ISOLATION_WARNING,
+    SIG_DIAG_BMS_COOLANT_LEAKAGE_WARNING,
+    SIG_DIAG_BMS_CELL_TEMPERATURE_IMBALANCE_WARNING,
+    SIG_DIAG_BMS_BDU_TEMPERATURE_WARNING,
+    SIG_DIAG_BMS_CONTACTOR_AGING_WARNING,
+    SIG_DIAG_TWELVE_VOLT_SYSTEM_WARNING,
+    SIG_DIAG_NUM
+} CAN_DiagSignalName_t;
+
+typedef struct {
+    CAN_DiagSignalName_t name;
+    float factor;
+    float offset;
+    uint16_t start_bit;
+    uint8_t length;
+    uint8_t is_signed;
+    CAN_Endian_t endian;
+} CAN_DiagSignalDef_t;
+
+typedef struct {
+    uint32_t id;
+    CAN_IdType_t id_type;
+    CAN_FramePolicy_t frame_policy;
+    CAN_MessagePort_t port;
+    uint8_t expected_len;
+    uint8_t signal_count;
+    const CAN_DiagSignalDef_t *signals;
+} CAN_DiagMessageDef_t;
+
+typedef struct {
+    const CAN_DiagMessageDef_t *messages;
+    uint16_t message_count;
+} CAN_DiagProfile_t;
+
+typedef struct {
+    uint8_t seen;
+    uint8_t active;
+    uint64_t raw_value;
+    uint32_t last_update_tick;
+} Car_DiagSignalState_t;
+
+typedef struct {
+    Car_DiagSignalState_t signal[SIG_DIAG_NUM];
+    uint32_t matched_frame_count;
+    uint32_t unmatched_frame_count;
+    uint32_t parse_error_count;
+    uint32_t active_count;
+    CAN_DiagSignalName_t last_signal;
+    uint64_t last_raw_value;
+    uint32_t last_update_tick;
+} Car_DiagState_t;
+
+#define CAR_SIGNAL_MONITOR_MAX_ROWS    32U
+#define CAR_SIGNAL_MONITOR_NAME_CHARS  40U
+#define CAR_SIGNAL_MONITOR_VALUE_SCALE 1000L
+
+typedef struct {
+    CAN_SignalName_t signal_name;
+    uint8_t defined;
+    uint8_t seen;
+    uint8_t value_valid;
+    int32_t value_milli;
+} Car_SignalMonitorRow_t;
+
+typedef struct {
+    uint16_t active_car_type;
+    uint16_t signal_count;
+    uint16_t generation;
+    Car_SignalMonitorRow_t rows[CAR_SIGNAL_MONITOR_MAX_ROWS];
+} Car_SignalMonitorTable_t;
+
 // Signal trạng thái thực tế của xe
 typedef struct {
     float Val_LV_current;
     float Val_LV_Voltage;
+    float Val_LV_Batt_Temp;
+    float Val_FMCU_TargetTqReq;
+    float Val_EVCC_ACChgL1Temp;
     float Val_DCDC_Current;
     float Val_DCDC_Voltage;
+    int16_t Val_FMCU_MaxSpeedAllow;
+    uint16_t Val_BMS_RemainChargeTime;
     uint16_t Val_Car_Speed;
     uint8_t Val_Gear_Act; 
+    uint8_t Val_Gear_Valid;
     uint8_t Val_STAT_Terminal;
     uint8_t Val_Break_Position; 
     uint8_t Val_Break_Pedal_Sts;
+    uint8_t Val_Brake_Light_Req;
     uint8_t Val_Acc_Pedal_Sts;
     uint8_t Val_Acc_Pedal_Position;
     uint8_t Val_HV_Sts; 
+    uint8_t Val_HV_OnOff_Req;
     uint8_t Val_LV_soc; 
+    uint8_t Val_LV_Batt_Type;
     uint8_t Val_HV_soc;
     uint8_t Val_Key_Act;
+    uint8_t Val_FMCU_MotorTqValid;
     uint8_t Val_CreepMode_Sts; 
     uint8_t Val_DCDC_Sts; 
 } Car_Val_Act_t;
@@ -338,6 +528,9 @@ typedef enum{
     VF_Virtual   // -> là xe ảo, sử dụng cho việc điều khiển qua PM/ Can OE
 }Car_Type;
 
+/* Preserve existing Car_Type numeric values used by Modbus/UI while exposing 7NP. */
+#define VF_7NP ((Car_Type)(VF_Virtual + 1))
+
 
 #define MAXIMUM_MESS_AT_CAR 20
 // --- Generic Test Engine Types ---
@@ -347,6 +540,7 @@ typedef enum {
     ACT_BREAK_PRESS, ACT_BREAK_RELEASE, ACT_BREAK_HOLD, ACT_BREAK_TRIGGER,
     ACT_GEAR_P, ACT_GEAR_R, ACT_GEAR_N, ACT_GEAR_D, ACT_GEAR_HOME,
     ACT_LV_RESET, ACT_ROBOT_STOP,
+    ACT_SEATBELT_BUCKLE, ACT_SEATBELT_RELEASE,
     ACT_WAIT
 } TestAction_t;
 
@@ -402,6 +596,7 @@ typedef struct{
     // --- Dynamic Test Sequence ---
     TestStep_t*        SequenceTable;
     uint8_t            SequenceSize;
+    const CAN_DiagProfile_t *DiagProfile;
 
 }Car_Define_Typedef;
 

@@ -58,6 +58,7 @@ extern Car_Define_Typedef Vinfast_VF3;
 extern Car_Define_Typedef Vinfast_e34;
 extern Car_Define_Typedef Vinfast_Van;
 extern Car_Define_Typedef Vinfast_Limo;
+extern Car_Define_Typedef Vinfast_7NP;
 
 
 /*=========================================================================================================================================================================||

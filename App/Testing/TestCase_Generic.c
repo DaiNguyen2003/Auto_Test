@@ -68,6 +68,8 @@ static void Update(void) {
             
             case ACT_LV_RESET:   LV_Drive(FC_LV_Reset); break;
             case ACT_ROBOT_STOP: Robot_Drive(FC_Robot_Stop); break;
+            case ACT_SEATBELT_BUCKLE: SeatBelt(1); break;
+            case ACT_SEATBELT_RELEASE: SeatBelt(0); break;
             case ACT_WAIT:       break; // Không làm gì, chỉ chờ
             default: break;
         }
@@ -128,6 +130,8 @@ static const char* GetStateName(void) {
         case ACT_GEAR_R:      return "GEAR R      ";
         case ACT_GEAR_N:      return "GEAR N      ";
         case ACT_GEAR_D:      return "GEAR D      ";
+        case ACT_SEATBELT_BUCKLE: return "BELT BUCKLE ";
+        case ACT_SEATBELT_RELEASE: return "BELT RELEASE";
         case ACT_WAIT:        return "WAITING...  ";
         default:              return "STEP RUNNING";
     }

@@ -21,6 +21,7 @@ typedef enum {
     PAGE_VFe34_TEST,
     PAGE_VIRTUAL_TEST,
     PAGE_GEARDEMO_TEST,
+    PAGE_CREEP_TEST,
     PAGE_MAX
 } UI_Page_Typedef;
 

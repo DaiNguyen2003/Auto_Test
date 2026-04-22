@@ -21,7 +21,8 @@ static TestCase_t* test_registry[] = {
     &TestCase_Generic, // VF2
     &TestCase_Generic, // e34
     &TestCase_Generic, // Virtual
-    &TestCase_GearDemo
+    &TestCase_GearDemo,
+    &TestCase_Creep
 };
 #define TEST_COUNT (sizeof(test_registry)/sizeof(TestCase_t*))
 

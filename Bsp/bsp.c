@@ -22,7 +22,7 @@ void BSP_Init(void) {
 
 void SeatBelt(uint8_t stt) {
     if (stt == 1) { // cài
-        __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 2250); // Thắt
+        __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 2400); // Thắt (tăng lên một chút từ 2250)
     } else {
         __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 1250); // nhả
     }
